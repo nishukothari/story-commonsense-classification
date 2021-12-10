@@ -1,10 +1,7 @@
 import pandas as pd
-import numpy as np
 import os
 import tensorflow as tf
 import tensorflow_hub as hub
-from tokens import FullTokenizer
-from sklearn.preprocessing import MultiLabelBinarizer
 from bert_utils import build_model, preprocess
 
 training_file_motivation = pd.read_csv(os.path.join("scs-baselines-master/data/dev/motivation", "allcharlinepairs_noids.csv"))
@@ -17,9 +14,8 @@ bert_layer = hub.KerasLayer(module_url, trainable=True)
 train_input, train_labels = preprocess(training_file_motivation, bert_layer)
 
 model = build_model(bert_layer, max_len=128)
-model.summary()
 
-checkpoint = tf.keras.callbacks.ModelCheckpoint('model1.h5', monitor='val_accuracy', save_best_only=True, verbose=1)
+checkpoint = tf.keras.callbacks.ModelCheckpoint('model2.h5', monitor='val_accuracy', save_best_only=True, verbose=1)
 earlystopping = tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=5, verbose=1)
 
 train_history = model.fit(

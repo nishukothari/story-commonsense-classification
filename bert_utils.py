@@ -3,6 +3,13 @@ import tensorflow as tf
 from tokens import FullTokenizer
 from sklearn.preprocessing import MultiLabelBinarizer
 
+def my_filter(row):
+    for label in row["reiss"]:
+        if label == 'na':
+            return False
+
+    return True
+
 def string_to_list(input_string: str) -> list:
     res = input_string.strip('][')
     res = res.replace('"', '')
@@ -57,14 +64,21 @@ def preprocess(file, bert_layer):
     file = file[file['reiss'] != '[]']
     file = file[file['reiss'] != '["na"]']
     file["maslow"] = file["maslow"].apply(string_to_list)
+    file["reiss"] = file["reiss"].apply(string_to_list)
+    file = file[file.apply(my_filter, axis=1)]
     file.reset_index(drop=True, inplace=True)
 
     vocab_file = bert_layer.resolved_object.vocab_file.asset_path.numpy()
     do_lower_case = bert_layer.resolved_object.do_lower_case.numpy()
     tokenizer = FullTokenizer(vocab_file, do_lower_case)
 
-    mlb = MultiLabelBinarizer()
-    labels = mlb.fit_transform(file["maslow"])
+    mlb_m = MultiLabelBinarizer()
+    labels_m = mlb_m.fit_transform(file["maslow"])
+
+    mlb_r = MultiLabelBinarizer()
+    labels_r = mlb_r.fit_transform(file["reiss"])
+
+    labels = np.concatenate((labels_m, labels_r), axis=1)
     data = bert_encode(file['sentence'].values, tokenizer)
 
     return data, labels
