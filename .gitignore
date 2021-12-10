@@ -132,3 +132,4 @@ dmypy.json
 .vscode
 
 scs-baselines-master/processed
+model.h5

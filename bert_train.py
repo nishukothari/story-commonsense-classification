@@ -49,10 +49,10 @@ def build_model(bert_layer, max_len=512):
     net = tf.keras.layers.Dropout(0.2)(net)
     net = tf.keras.layers.Dense(32, activation='relu')(net)
     net = tf.keras.layers.Dropout(0.2)(net)
-    out = tf.keras.layers.Dense(5, activation='softmax')(net)
+    out = tf.keras.layers.Dense(5, activation='sigmoid')(net)
     
     model = tf.keras.models.Model(inputs=[input_word_ids, input_mask, segment_ids], outputs=out)
-    model.compile(tf.keras.optimizers.Adam(lr=1e-5), loss='categorical_crossentropy', metrics=['accuracy'])
+    model.compile(tf.keras.optimizers.Adam(lr=1e-5), loss='binary_crossentropy', metrics=['accuracy'])
     
     return model
 
@@ -87,13 +87,13 @@ train_input, train_labels = preprocess(training_file_motivation, bert_layer)
 model = build_model(bert_layer, max_len=128)
 model.summary()
 
-checkpoint = tf.keras.callbacks.ModelCheckpoint('model.h5', monitor='val_accuracy', save_best_only=True, verbose=1)
+checkpoint = tf.keras.callbacks.ModelCheckpoint('model1.h5', monitor='val_accuracy', save_best_only=True, verbose=1)
 earlystopping = tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=5, verbose=1)
 
 train_history = model.fit(
     train_input, train_labels, 
     validation_split=0.2,
-    epochs=1,
+    epochs=3,
     callbacks=[checkpoint, earlystopping],
     batch_size=16,
     verbose=1
