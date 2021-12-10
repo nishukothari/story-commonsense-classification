@@ -15,7 +15,7 @@ def string_to_list(input_string: str) -> list:
     return res
 
 
-def bert_encode(texts, tokenizer, max_len=512):
+def bert_encode(texts, tokenizer, max_len=128):
     all_tokens = []
     all_masks = []
     all_segments = []
