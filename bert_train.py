@@ -56,28 +56,31 @@ def build_model(bert_layer, max_len=512):
     
     return model
 
+def preprocess(file, bert_layer):
+    file = file[file['action'] != 'no']
+    file = file[file['motivation'] != 'none']
+    file = file[file['maslow'] != '[]']
+    file = file[file['reiss'] != '[]']
+    file = file[file['reiss'] != '["na"]']
+    file["maslow"] = file["maslow"].apply(string_to_list)
+    file.reset_index(drop=True, inplace=True)
+
+    vocab_file = bert_layer.resolved_object.vocab_file.asset_path.numpy()
+    do_lower_case = bert_layer.resolved_object.do_lower_case.numpy()
+    tokenizer = FullTokenizer(vocab_file, do_lower_case)
+
+    mlb = MultiLabelBinarizer()
+    labels = mlb.fit_transform(file["maslow"])
+    data = bert_encode(file['sentence'].values, tokenizer)
+
+    return data, labels
 
 training_file_motivation = pd.read_csv(os.path.join("scs-baselines-master/data/dev/motivation", "allcharlinepairs_noids.csv"))
-training_file_emotion = pd.read_csv(os.path.join("scs-baselines-master/data/dev/emotion", "allcharlinepairs_noids.csv"))
-training_file_motivation = training_file_motivation[training_file_motivation['action'] != 'no']
-training_file_motivation = training_file_motivation[training_file_motivation['motivation'] != 'none']
-training_file_motivation = training_file_motivation[training_file_motivation['maslow'] != '[]']
-training_file_motivation = training_file_motivation[training_file_motivation['reiss'] != '[]']
-training_file_motivation = training_file_motivation[training_file_motivation['reiss'] != '["na"]']
-training_file_motivation["maslow"] = training_file_motivation["maslow"].apply(string_to_list)
-training_file_motivation.reset_index(drop=True, inplace=True)
-
 
 module_url = 'https://tfhub.dev/tensorflow/bert_en_uncased_L-12_H-768_A-12/2'
 bert_layer = hub.KerasLayer(module_url, trainable=True)
 
-vocab_file = bert_layer.resolved_object.vocab_file.asset_path.numpy()
-do_lower_case = bert_layer.resolved_object.do_lower_case.numpy()
-tokenizer = FullTokenizer(vocab_file, do_lower_case)
-
-mlb = MultiLabelBinarizer()
-train_labels = mlb.fit_transform(training_file_motivation["maslow"])
-train_input = bert_encode(training_file_motivation['sentence'].values, tokenizer)
+train_input, train_labels = preprocess(training_file_motivation, bert_layer)
 
 model = build_model(bert_layer, max_len=512)
 model.summary()
@@ -88,8 +91,10 @@ earlystopping = tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patienc
 train_history = model.fit(
     train_input, train_labels, 
     validation_split=0.2,
-    epochs=3,
+    epochs=1,
     callbacks=[checkpoint, earlystopping],
     batch_size=32,
     verbose=1
 )
+
+print(train_history)
