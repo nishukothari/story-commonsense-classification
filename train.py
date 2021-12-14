@@ -25,19 +25,22 @@ print("CNN Model Training")
 print("CNN: Training Maslow")
 
 cnn_maslow = build_model_cnn(6)
-runNetwork(True, 3, cnn_maslow, cnn_dataset_m)
+loss_history_m, _, _, _ = runNetwork(True, 3, cnn_maslow, cnn_dataset_m)
+torch.save(loss_history_m, 'lossMaslowCNN')
 torch.save(cnn_maslow.state_dict(), 'cnn_maslow.pth')
 
 print("CNN: Training Reiss")
 
 cnn_reiss = build_model_cnn(20)
-runNetwork(True, 3, cnn_reiss, cnn_dataset_r)
+loss_history_r, _, _, _ = runNetwork(True, 3, cnn_reiss, cnn_dataset_r)
+torch.save(loss_history_r, 'lossReissCNN')
 torch.save(cnn_reiss.state_dict(), 'cnn_reiss.pth')
 
 print("CNN: Training Plutchik")
 
 cnn_plutchik = build_model_cnn(17)
-runNetwork(True, 3, cnn_plutchik, cnn_dataset_p)
+loss_history_p, _, _, _ = runNetwork(True, 3, cnn_plutchik, cnn_dataset_p)
+torch.save(loss_history_p, 'lossPlutchikCNN')
 torch.save(cnn_plutchik.state_dict(), 'cnn_plutchik.pth')
 
 print("BERT Model Training")
@@ -56,7 +59,7 @@ train_history_m = bert_model_m.fit(
     verbose=1
 )
 
-with open('lossMaslow', 'wb') as bert_file_maslow:
+with open('lossMaslowBERT', 'wb') as bert_file_maslow:
         pickle.dump(train_history_m.history, bert_file_maslow)
 
 print("BERT: Training Reiss")
@@ -74,7 +77,7 @@ train_history_r = bert_model_r.fit(
     verbose=1
 )
 
-with open('lossReiss', 'wb') as bert_file_reiss:
+with open('lossReissBERT', 'wb') as bert_file_reiss:
         pickle.dump(train_history_r.history, bert_file_reiss)
 
 print("BERT: Training Plutchik")
@@ -92,5 +95,5 @@ train_history_p = bert_model_p.fit(
     verbose=1
 )
 
-with open('lossPlutchik', 'wb') as bert_file_plutchik:
+with open('lossPlutchikBERT', 'wb') as bert_file_plutchik:
         pickle.dump(train_history_p.history, bert_file_plutchik)
