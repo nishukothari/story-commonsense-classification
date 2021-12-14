@@ -4,6 +4,11 @@ from tokens import FullTokenizer
 from sklearn.preprocessing import MultiLabelBinarizer
 import pandas as pd
 from statistics import mode
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from tqdm import tqdm
+from sklearn.metrics import precision_recall_fscore_support
 
 def string_to_list(input_string: str) -> list:
     res = input_string.strip('][')
@@ -12,7 +17,7 @@ def string_to_list(input_string: str) -> list:
     
     return res
 
-def build_model(bert_layer, output_dim, max_len=128):
+def build_model_bert(bert_layer, output_dim, max_len=128):
     input_word_ids = tf.keras.Input(shape=(max_len,), dtype=tf.int32, name="input_word_ids")
     input_mask = tf.keras.Input(shape=(max_len,), dtype=tf.int32, name="input_mask")
     segment_ids = tf.keras.Input(shape=(max_len,), dtype=tf.int32, name="segment_ids")
@@ -174,9 +179,118 @@ def preprocess(file_motivation, file_emotion, bert_layer):
 
     return inputs, labels
 
+def build_model_bert_raw(bert_layer, max_len=128):
+  input_word_ids = tf.keras.Input(shape=(max_len,), dtype=tf.int32, name="input_word_ids")
+  input_mask = tf.keras.Input(shape=(max_len,), dtype=tf.int32, name="input_mask")
+  segment_ids = tf.keras.Input(shape=(max_len,), dtype=tf.int32, name="segment_ids")
+
+  pooled_output, sequence_output = bert_layer([input_word_ids, input_mask, segment_ids])
+
+  model = tf.keras.models.Model(inputs=[input_word_ids, input_mask, segment_ids], outputs=sequence_output)
+  model.compile(tf.keras.optimizers.Adam(lr=1e-3), loss='categorical_crossentropy', metrics=['accuracy'])
+  
+  return model
+
+def build_model_cnn(num_classes):
+    cnn = args = {}
+    args['embed_num'] = 128
+    args['embed_dim'] = 768
+    args['class_num'] = num_classes
+    args['kernel_num'] = 100
+    args['kernel_sizes'] = [3, 4, 5]
+    args['dropout'] = 0.5
+    args['static'] = False
+    cnn = CNN_Text(
+        args
+    )
+    return cnn
+
 def predict_one_hot(x):
     d = x.reshape(-1, x.shape[-1])
     d2 = np.zeros_like(d)
     d2[np.arange(len(d2)), d.argmax(1)] = 1
     d2 = d2.reshape(x.shape)
     return d2
+
+class CNN_Text(nn.Module):
+    
+    def __init__(self, args):
+        super(CNN_Text, self).__init__()
+        print(args)
+        self.args = args
+        
+        V = args['embed_num']
+        D = args['embed_dim']
+        C = args['class_num']
+        Ci = 1
+        Co = args['kernel_num']
+        Ks = args['kernel_sizes']
+
+        self.convs = nn.ModuleList([nn.Conv2d(Ci, Co, (K, D)) for K in Ks])
+        self.dropout = nn.Dropout(args['dropout'])
+        self.fc1 = nn.Linear(len(Ks) * Co, C)
+
+        if self.args['static']:
+            self.embed.weight.requires_grad = False
+
+    def forward(self, x):    
+        x = x.unsqueeze(1)  # (N, Ci, W, D)
+
+        x = [F.relu(conv(x)).squeeze(3) for conv in self.convs]  # [(N, Co, W), ...]*len(Ks)
+
+        x = [F.max_pool1d(i, i.size(2)).squeeze(2) for i in x]  # [(N, Co), ...]*len(Ks)
+
+        x = torch.cat(x, 1)
+
+        x = self.dropout(x)  # (N, len(Ks)*Co)
+        logit = self.fc1(x)  # (N, C)
+        return logit
+
+class SCSDataset(torch.utils.data.dataset.Dataset):
+    def __init__(self, embeddings, labels):
+        self.embeddings = embeddings
+        self.labels = labels
+    
+    def __len__(self):
+        return len(self.embeddings)
+    
+    def __getitem__(self, idx):
+        return self.embeddings[idx], self.labels[idx]
+
+def get_dataloader(dataset, batch):
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch, shuffle=True)
+    return dataloader
+
+def runNetwork(train, num_epochs, net, dataset, batch=32):
+
+    criterion = nn.CrossEntropyLoss()
+    if train:
+        net.train()
+    else:
+        net.eval()
+
+    hist_loss = []
+    optimizer = torch.optim.Adam(net.parameters(), lr=0.001)
+    total_count = 0
+    for i in range(num_epochs):
+        loader = get_dataloader(dataset, batch)
+        for embeddings, label in tqdm(loader):        
+            prediction = net.forward(embeddings)
+            loss = criterion(prediction, label)
+            prediction = prediction.detach().numpy()
+            prediction = np.apply_along_axis(predict_one_hot, axis=2, arr=prediction)
+
+            hist_loss.append(loss.item())
+
+            if train:
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+            else:
+                precision, recall, f1, _ = precision_recall_fscore_support(label, prediction)
+
+            total_count += 1
+
+        print('Epoch {}: Loss: {:.4f}'.format(i, hist_loss[total_count - 1]))
+
+    return hist_loss, precision, recall, f1
