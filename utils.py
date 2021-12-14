@@ -243,19 +243,31 @@ class CNN_Text(nn.Module):
         x = torch.cat(x, 1)
 
         x = self.dropout(x)  # (N, len(Ks)*Co)
-        logit = self.fc1(x)  # (N, C)
+        logit = self.fc1(x)
+        logit = F.sigmoid(logit)  # (N, C)
         return logit
 
 class SCSDataset(torch.utils.data.dataset.Dataset):
-    def __init__(self, embeddings, labels):
-        self.embeddings = embeddings
+    def __init__(self, embeddings, labels, bert_model):
+        self.embeddings1, self.embeddings2, self.embeddings3 = embeddings
         self.labels = labels
+        self.bert_model = bert_model
     
     def __len__(self):
-        return len(self.embeddings)
+        return len(self.labels)
     
     def __getitem__(self, idx):
-        return self.embeddings[idx], self.labels[idx]
+        subset_index = 1
+        subset = None
+        if idx == 0:
+            subset = self.embeddings1[0:2, :], self.embeddings2[0:2, :], self.embeddings3[0:2, :]
+            subset_index = 0
+        else:
+            subset = self.embeddings1[idx-1:idx+1, :], self.embeddings2[idx-1:idx+1, :], self.embeddings3[idx-1:idx+1, :]
+
+        bert_raw_results = torch.from_numpy(self.bert_model(subset).numpy())
+
+        return bert_raw_results[subset_index], self.labels[idx]
 
 def get_dataloader(dataset, batch):
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch, shuffle=True)
@@ -276,9 +288,9 @@ def runNetwork(train, num_epochs, net, dataset, batch=32):
         loader = get_dataloader(dataset, batch)
         for embeddings, label in tqdm(loader):        
             prediction = net.forward(embeddings)
-            loss = criterion(prediction, label)
+            loss = criterion(prediction, np.argmax(label, axis=1))
             prediction = prediction.detach().numpy()
-            prediction = np.apply_along_axis(predict_one_hot, axis=2, arr=prediction)
+            prediction = np.apply_along_axis(predict_one_hot, axis=1, arr=prediction)
 
             hist_loss.append(loss.item())
 

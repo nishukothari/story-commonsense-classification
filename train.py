@@ -16,15 +16,10 @@ bert_layer = hub.KerasLayer(module_url, trainable=True)
 
 train_input, train_labels = preprocess(training_file_motivation, training_file_emotion, bert_layer)
 
-print(1)
 bert_model_raw = build_model_bert_raw(bert_layer)
-print(2)
-sequence_motivation = torch.from_numpy(bert_model_raw(train_input['motivation']).numpy())
-sequence_emotion = torch.from_numpy(bert_model_raw(train_input['emotion']).numpy())
-print(3)
-cnn_dataset_m = SCSDataset(sequence_motivation, torch.from_numpy(train_labels['maslow'].numpy()))
-cnn_dataset_r = SCSDataset(sequence_motivation, torch.from_numpy(train_labels['reiss'].numpy()))
-cnn_dataset_p = SCSDataset(sequence_emotion, torch.from_numpy(train_labels['plutchik'].numpy()))
+cnn_dataset_m = SCSDataset(train_input['motivation'], torch.from_numpy(train_labels['maslow']), bert_model_raw)
+cnn_dataset_r = SCSDataset(train_input['motivation'], torch.from_numpy(train_labels['reiss']), bert_model_raw)
+cnn_dataset_p = SCSDataset(train_input['emotion'], torch.from_numpy(train_labels['plutchik']), bert_model_raw)
 
 print("CNN Model Training")
 print("CNN: Training Maslow")
