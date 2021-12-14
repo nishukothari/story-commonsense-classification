@@ -184,7 +184,7 @@ def build_model_bert_raw(bert_layer, max_len=128):
   input_mask = tf.keras.Input(shape=(max_len,), dtype=tf.int32, name="input_mask")
   segment_ids = tf.keras.Input(shape=(max_len,), dtype=tf.int32, name="segment_ids")
 
-  pooled_output, sequence_output = bert_layer([input_word_ids, input_mask, segment_ids])
+  _, sequence_output = bert_layer([input_word_ids, input_mask, segment_ids])
 
   model = tf.keras.models.Model(inputs=[input_word_ids, input_mask, segment_ids], outputs=sequence_output)
   model.compile(tf.keras.optimizers.Adam(lr=1e-3), loss='categorical_crossentropy', metrics=['accuracy'])
