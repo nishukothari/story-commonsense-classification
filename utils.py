@@ -282,6 +282,9 @@ def runNetwork(train, num_epochs, net, dataset, batch=32):
         net.eval()
 
     hist_loss = []
+    precision = None
+    recall = None
+    f1 = None
     optimizer = torch.optim.Adam(net.parameters(), lr=0.001)
     total_count = 0
     for i in range(num_epochs):
