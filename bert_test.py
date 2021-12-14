@@ -6,7 +6,7 @@ import tensorflow_hub as hub
 from bert_utils import build_model, preprocess
 from sklearn.metrics import precision_recall_fscore_support
 
-testing_file_motivation = pd.read_csv(os.path.join("scs-baselines-master/data/test/motivation", "allcharlinepairs_noids.csv"))
+testing_file_motivation = pd.read_csv(os.path.join("data/test/motivation", "allcharlinepairs_noids.csv"))
 
 module_url = 'https://tfhub.dev/tensorflow/bert_en_uncased_L-12_H-768_A-12/2'
 bert_layer = hub.KerasLayer(module_url, trainable=True)

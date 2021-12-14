@@ -4,7 +4,7 @@ import tensorflow as tf
 import tensorflow_hub as hub
 from bert_utils import build_model, preprocess
 
-training_file_motivation = pd.read_csv(os.path.join("scs-baselines-master/data/dev/motivation", "allcharlinepairs_noids.csv"))
+training_file_motivation = pd.read_csv(os.path.join("data/dev/motivation", "allcharlinepairs_noids.csv"))
 
 print("enough memory for pandas")
 
