@@ -85,6 +85,13 @@ def combine_sentence(df):
 
     return full_sentence
 
+def noneFilter(arr):
+    for x in arr:
+        if x == 'none':
+            return False
+    
+    return True
+
 def preprocess(file_motivation, file_emotion, bert_layer):
     file_motivation["maslow"] = file_motivation["maslow"].apply(string_to_list)
     file_motivation["reiss"] = file_motivation["reiss"].apply(string_to_list)
@@ -102,6 +109,10 @@ def preprocess(file_motivation, file_emotion, bert_layer):
         'full_sentence': 'first'
     }).reset_index()
 
+    file_emotion = file_emotion[file_emotion["plutchik"].apply(noneFilter)]
+    file_motivation = file_motivation[file_motivation["reiss"].apply(noneFilter)]
+    file_motivation = file_motivation[file_motivation["maslow"].apply(noneFilter)]
+
     vocab_file = bert_layer.resolved_object.vocab_file.asset_path.numpy()
     do_lower_case = bert_layer.resolved_object.do_lower_case.numpy()
     tokenizer = FullTokenizer(vocab_file, do_lower_case)
@@ -112,8 +123,7 @@ def preprocess(file_motivation, file_emotion, bert_layer):
         ["physiological"], 
         ["stability"], 
         ["esteem"], 
-        ["spiritual growth"], 
-        ["none"]
+        ["spiritual growth"]
     ])
     labels_m = mlb_m.transform(groups_motivation["maslow"])
 
@@ -137,8 +147,7 @@ def preprocess(file_motivation, file_emotion, bert_layer):
         ["approval"],
         ["rest"],
         ["tranquility"],
-        ["order"],
-        ["none"]
+        ["order"]
     ])
     labels_r = mlb_r.transform(groups_motivation["reiss"])
 
@@ -159,8 +168,7 @@ def preprocess(file_motivation, file_emotion, bert_layer):
         ["sadness:3"],
         ["sadness:2"],
         ["joy:2"],
-        ["joy:3"],
-        ["none"]
+        ["joy:3"]
     ])
     labels_p =  mlb_p.transform(groups_emotion["plutchik"])
 
@@ -187,7 +195,7 @@ def build_model_bert_raw(bert_layer, max_len=128):
   _, sequence_output = bert_layer([input_word_ids, input_mask, segment_ids])
 
   model = tf.keras.models.Model(inputs=[input_word_ids, input_mask, segment_ids], outputs=sequence_output)
-  model.compile(tf.keras.optimizers.Adam(lr=1e-3), loss='categorical_crossentropy', metrics=['accuracy'])
+  model.compile(tf.keras.optimizers.Adam(lr=1e-3), loss=tf.keras.losses.BinaryCrossentropy(from_logits=True), metrics=['accuracy'])
   
   return model
 
@@ -275,7 +283,7 @@ def get_dataloader(dataset, batch):
 
 def runNetwork(train, num_epochs, net, dataset, batch=32, file_extension=""):
 
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.BCEWithLogitsLoss()
     if train:
         net.train()
     else:

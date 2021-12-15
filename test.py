@@ -24,19 +24,19 @@ cnn_dataset_p = SCSDataset(test_input['emotion'], torch.from_numpy(test_labels['
 print("CNN Model Testing")
 print("CNN: Testing Maslow")
 
-cnn_maslow = build_model_cnn(6)
+cnn_maslow = build_model_cnn(5)
 cnn_maslow.load_state_dict(torch.load('cnn_maslow.pth'))
 _, precision_maslow_cnn, recall_maslow_cnn, f1_maslow_cnn = runNetwork(False, 1, cnn_maslow, cnn_dataset_m, file_extension='cnn_maslow')
 
 print("CNN: Testing Reiss")
 
-cnn_reiss = build_model_cnn(20)
+cnn_reiss = build_model_cnn(19)
 cnn_reiss.load_state_dict(torch.load('cnn_reiss.pth'))
 _, precision_reiss_cnn, recall_reiss_cnn, f1_reiss_cnn = runNetwork(False, 1, cnn_reiss, cnn_dataset_r, file_extension='cnn_reiss')
 
 print("CNN: Testing Plutchik")
 
-cnn_plutchik = build_model_cnn(17)
+cnn_plutchik = build_model_cnn(16)
 cnn_plutchik.load_state_dict(torch.load('cnn_plutchik.pth'))
 _, precision_plutchik_cnn, recall_plutchik_cnn, f1_plutchik_cnn = runNetwork(False, 1, cnn_plutchik, cnn_dataset_p, file_extension='cnn_plutchik')
 
@@ -44,7 +44,7 @@ _, precision_plutchik_cnn, recall_plutchik_cnn, f1_plutchik_cnn = runNetwork(Fal
 print("BERT Model Testing")
 print("BERT: Testing Maslow")
 
-model_m = build_model_bert(bert_layer, 6, max_len=128)
+model_m = build_model_bert(bert_layer, 5, max_len=128)
 model_m.load_weights('bert_model_maslow.h5')
 
 test_output_m = model_m.predict(test_input['motivation'])
@@ -58,7 +58,7 @@ precision_maslow_bert, recall_maslow_bert, f1_maslow_bert, _ = precision_recall_
 
 print("BERT: Testing Reiss")
 
-model_r = build_model_bert(bert_layer, 20, max_len=128)
+model_r = build_model_bert(bert_layer, 19, max_len=128)
 model_r.load_weights('bert_model_reiss.h5')
 
 test_output_r = model_r.predict(test_input['motivation'])
@@ -71,7 +71,7 @@ precision_reiss_bert, recall_reiss_bert, f1_reiss_bert, _ = precision_recall_fsc
 
 print("BERT: Testing Plutchik")
 
-model_p = build_model_bert(bert_layer, 17, max_len=128)
+model_p = build_model_bert(bert_layer, 16, max_len=128)
 model_p.load_weights('bert_model_plutchik.h5')
 
 test_output_p = model_p.predict(test_input['emotion'])

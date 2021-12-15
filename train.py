@@ -24,21 +24,21 @@ cnn_dataset_p = SCSDataset(train_input['emotion'], torch.from_numpy(train_labels
 print("CNN Model Training")
 print("CNN: Training Maslow")
 
-cnn_maslow = build_model_cnn(6)
+cnn_maslow = build_model_cnn(5)
 loss_history_m, _, _, _ = runNetwork(True, 3, cnn_maslow, cnn_dataset_m)
 torch.save(loss_history_m, 'lossMaslowCNN')
 torch.save(cnn_maslow.state_dict(), 'cnn_maslow.pth')
 
 print("CNN: Training Reiss")
 
-cnn_reiss = build_model_cnn(20)
+cnn_reiss = build_model_cnn(19)
 loss_history_r, _, _, _ = runNetwork(True, 3, cnn_reiss, cnn_dataset_r)
 torch.save(loss_history_r, 'lossReissCNN')
 torch.save(cnn_reiss.state_dict(), 'cnn_reiss.pth')
 
 print("CNN: Training Plutchik")
 
-cnn_plutchik = build_model_cnn(17)
+cnn_plutchik = build_model_cnn(16)
 loss_history_p, _, _, _ = runNetwork(True, 3, cnn_plutchik, cnn_dataset_p)
 torch.save(loss_history_p, 'lossPlutchikCNN')
 torch.save(cnn_plutchik.state_dict(), 'cnn_plutchik.pth')
@@ -46,7 +46,7 @@ torch.save(cnn_plutchik.state_dict(), 'cnn_plutchik.pth')
 print("BERT Model Training")
 print("BERT: Training Maslow")
 
-bert_model_m = build_model_bert(bert_layer, 6, max_len=128)
+bert_model_m = build_model_bert(bert_layer, 5, max_len=128)
 checkpoint_m = tf.keras.callbacks.ModelCheckpoint('bert_model_maslow.h5', monitor='val_accuracy', save_best_only=True, verbose=1)
 earlystopping_m = tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=5, verbose=1)
 
@@ -64,7 +64,7 @@ with open('lossMaslowBERT', 'wb') as bert_file_maslow:
 
 print("BERT: Training Reiss")
 
-bert_model_r = build_model_bert(bert_layer, 20, max_len=128)
+bert_model_r = build_model_bert(bert_layer, 19, max_len=128)
 checkpoint_r = tf.keras.callbacks.ModelCheckpoint('bert_model_reiss.h5', monitor='val_accuracy', save_best_only=True, verbose=1)
 earlystopping_r = tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=5, verbose=1)
 
@@ -82,7 +82,7 @@ with open('lossReissBERT', 'wb') as bert_file_reiss:
 
 print("BERT: Training Plutchik")
 
-bert_model_p = build_model_bert(bert_layer, 17, max_len=128)
+bert_model_p = build_model_bert(bert_layer, 16, max_len=128)
 checkpoint_p = tf.keras.callbacks.ModelCheckpoint('bert_model_plutchik.h5', monitor='val_accuracy', save_best_only=True, verbose=1)
 earlystopping_p = tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=5, verbose=1)
 
