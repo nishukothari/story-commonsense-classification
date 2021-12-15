@@ -328,5 +328,5 @@ def runNetwork(train, num_epochs, net, dataset, batch=32, file_extension=""):
         filename_preds = "preds_" + file_extension
         np.save(filename_labels, all_labels)
         np.save(filename_preds, all_preds)
-    precision, recall, f1, _ = precision_recall_fscore_support(all_labels, all_preds, average='micro')
+        precision, recall, f1, _ = precision_recall_fscore_support(all_labels, all_preds, average='micro')
     return hist_loss, precision, recall, f1
