@@ -4,7 +4,7 @@ import os
 import torch
 import tensorflow as tf
 import tensorflow_hub as hub
-from utils import build_model, preprocess, predict_one_hot, build_model_bert_raw, SCSDataset, build_model_cnn, runNetwork
+from utils import build_model_bert, preprocess, predict_one_hot, build_model_bert_raw, SCSDataset, build_model_cnn, runNetwork
 from sklearn.metrics import precision_recall_fscore_support
 from tabulate import tabulate
 
@@ -44,7 +44,7 @@ _, precision_plutchik_cnn, recall_plutchik_cnn, f1_plutchik_cnn = runNetwork(Fal
 print("BERT Model Testing")
 print("BERT: Testing Maslow")
 
-model_m = build_model(bert_layer, 6, max_len=128)
+model_m = build_model_bert(bert_layer, 6, max_len=128)
 model_m.load_weights('bert_model_maslow.h5')
 
 test_output_m = model_m.predict(test_input['motivation'])
@@ -57,7 +57,7 @@ _, precision_maslow_bert, recall_maslow_bert, f1_maslow_bert = precision_recall_
 
 print("BERT: Testing Reiss")
 
-model_r = build_model(bert_layer, 20, max_len=128)
+model_r = build_model_bert(bert_layer, 20, max_len=128)
 model_r.load_weights('bert_model_reiss.h5')
 
 test_output_r = model_r.predict(test_input['motivation'])
@@ -70,7 +70,7 @@ _, precision_reiss_bert, recall_reiss_bert, f1_reiss_bert = precision_recall_fsc
 
 print("BERT: Testing Plutchik")
 
-model_p = build_model(bert_layer, 17, max_len=128)
+model_p = build_model_bert(bert_layer, 17, max_len=128)
 model_p.load_weights('bert_model_plutchik.h5')
 
 test_output_p = model_r.predict(test_input['emotion'])
