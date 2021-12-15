@@ -273,7 +273,7 @@ def get_dataloader(dataset, batch):
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch, shuffle=True)
     return dataloader
 
-def runNetwork(train, num_epochs, net, dataset, batch=32):
+def runNetwork(train, num_epochs, net, dataset, batch=32, file_extension=""):
 
     criterion = nn.CrossEntropyLoss()
     if train:
@@ -282,6 +282,8 @@ def runNetwork(train, num_epochs, net, dataset, batch=32):
         net.eval()
 
     hist_loss = []
+    all_preds = None
+    all_labels = None
     precision = None
     recall = None
     f1 = None
@@ -302,10 +304,20 @@ def runNetwork(train, num_epochs, net, dataset, batch=32):
                 loss.backward()
                 optimizer.step()
             else:
-                precision, recall, f1, _ = precision_recall_fscore_support(label, prediction)
-
+                if all_preds is not None:
+                    all_preds = np.concatenate((all_preds, prediction), axis=0)
+                    all_labels = np.concatenate((all_labels, label.detach().numpy()), axis=0)
+                else:
+                    all_preds = prediction
+                    all_labels = label.detach().numpy()
             total_count += 1
 
         print('Epoch {}: Loss: {:.4f}'.format(i, hist_loss[total_count - 1]))
 
+    if not train:
+        filename_labels = "labels_" + file_extension
+        filename_preds = "preds_" + file_extension
+        np.save(filename_labels, all_labels)
+        np.save(filename_preds, all_preds)
+    precision, recall, f1, _ = precision_recall_fscore_support(all_labels, all_predictions)
     return hist_loss, precision, recall, f1
