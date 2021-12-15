@@ -74,7 +74,7 @@ print("BERT: Testing Plutchik")
 model_p = build_model_bert(bert_layer, 17, max_len=128)
 model_p.load_weights('bert_model_plutchik.h5')
 
-test_output_p = model_r.predict(test_input['emotion'])
+test_output_p = model_p.predict(test_input['emotion'])
 test_output_p = np.rint(test_output_p)
 #test_output_p = np.apply_along_axis(predict_one_hot, axis=1, arr=test_output_p)
 
