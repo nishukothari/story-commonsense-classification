@@ -48,7 +48,7 @@ model_m = build_model_bert(bert_layer, 6, max_len=128)
 model_m.load_weights('bert_model_maslow.h5')
 
 test_output_m = model_m.predict(test_input['motivation'])
-test_output_m = np.apply_along_axis(predict_one_hot, axis=1, arr=test_output_m)
+test_output_m = np.apply_along_axis(predict_one_hot, axis=2, arr=test_output_m)
 
 np.save("labels_bert_maslow", test_labels['maslow'])
 np.save("preds_bert_maslow", test_output_m)
@@ -61,7 +61,7 @@ model_r = build_model_bert(bert_layer, 20, max_len=128)
 model_r.load_weights('bert_model_reiss.h5')
 
 test_output_r = model_r.predict(test_input['motivation'])
-test_output_r = np.apply_along_axis(predict_one_hot, axis=1, arr=test_output_r)
+test_output_r = np.apply_along_axis(predict_one_hot, axis=2, arr=test_output_r)
 
 np.save("labels_bert_reiss", test_labels['reiss'])
 np.save("preds_bert_reiss", test_output_r)
@@ -74,7 +74,7 @@ model_p = build_model_bert(bert_layer, 17, max_len=128)
 model_p.load_weights('bert_model_plutchik.h5')
 
 test_output_p = model_r.predict(test_input['emotion'])
-test_output_p = np.apply_along_axis(predict_one_hot, axis=1, arr=test_output_p)
+test_output_p = np.apply_along_axis(predict_one_hot, axis=2, arr=test_output_p)
 
 np.save("labels_bert_plutchik", test_labels['plutchik'])
 np.save("preds_bert_plutchik", test_output_p)
