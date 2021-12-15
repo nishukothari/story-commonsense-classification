@@ -301,7 +301,7 @@ def runNetwork(train, num_epochs, net, dataset, batch=32, file_extension=""):
         loader = get_dataloader(dataset, batch)
         for embeddings, label in tqdm(loader):        
             prediction = net.forward(embeddings)
-            loss = criterion(prediction, label)
+            loss = criterion(prediction, label.float())
             prediction = prediction.detach().numpy()
             #prediction = np.apply_along_axis(predict_one_hot, axis=1, arr=prediction)
             prediction = np.rint(prediction)
