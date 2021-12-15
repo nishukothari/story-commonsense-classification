@@ -53,7 +53,7 @@ test_output_m = np.apply_along_axis(predict_one_hot, axis=1, arr=test_output_m)
 np.save("labels_bert_maslow", test_labels['maslow'])
 np.save("preds_bert_maslow", test_output_m)
 
-_, precision_maslow_bert, recall_maslow_bert, f1_maslow_bert = precision_recall_fscore_support(test_labels['maslow'], test_output_m, average='micro')
+precision_maslow_bert, recall_maslow_bert, f1_maslow_bert, _ = precision_recall_fscore_support(test_labels['maslow'], test_output_m, average='micro')
 
 print("BERT: Testing Reiss")
 
@@ -66,7 +66,7 @@ test_output_r = np.apply_along_axis(predict_one_hot, axis=1, arr=test_output_r)
 np.save("labels_bert_reiss", test_labels['reiss'])
 np.save("preds_bert_reiss", test_output_r)
 
-_, precision_reiss_bert, recall_reiss_bert, f1_reiss_bert = precision_recall_fscore_support(test_labels['reiss'], test_output_r, average='micro')
+precision_reiss_bert, recall_reiss_bert, f1_reiss_bert, _ = precision_recall_fscore_support(test_labels['reiss'], test_output_r, average='micro')
 
 print("BERT: Testing Plutchik")
 
@@ -79,7 +79,7 @@ test_output_p = np.apply_along_axis(predict_one_hot, axis=1, arr=test_output_p)
 np.save("labels_bert_plutchik", test_labels['plutchik'])
 np.save("preds_bert_plutchik", test_output_p)
 
-_, precision_plutchik_bert, recall_plutchik_bert, f1_plutchik_bert = precision_recall_fscore_support(test_labels['reiss'], test_output_p, average='micro')
+precision_plutchik_bert, recall_plutchik_bert, f1_plutchik_bert, _ = precision_recall_fscore_support(test_labels['reiss'], test_output_p, average='micro')
 
 
 data = [
