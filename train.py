@@ -21,7 +21,7 @@ cnn_dataset_m = SCSDataset(train_input['motivation'], torch.from_numpy(train_lab
 cnn_dataset_r = SCSDataset(train_input['motivation'], torch.from_numpy(train_labels['reiss']), bert_model_raw)
 cnn_dataset_p = SCSDataset(train_input['emotion'], torch.from_numpy(train_labels['plutchik']), bert_model_raw)
 
-""" print("CNN Model Training")
+print("CNN Model Training")
 print("CNN: Training Maslow")
 
 cnn_maslow = build_model_cnn(5)
@@ -60,7 +60,7 @@ train_history_m = bert_model_m.fit(
 )
 
 with open('lossMaslowBERT', 'wb') as bert_file_maslow:
-        pickle.dump(train_history_m.history, bert_file_maslow) """
+        pickle.dump(train_history_m.history, bert_file_maslow)
 
 print("BERT: Training Reiss")
 
