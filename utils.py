@@ -214,11 +214,12 @@ def build_model_cnn(num_classes):
     return cnn
 
 def predict_one_hot(x):
-    d = x.reshape(-1, x.shape[-1])
-    d2 = np.zeros_like(d)
-    d2[np.arange(len(d2)), d.argmax(1)] = 1
-    d2 = d2.reshape(x.shape)
-    return d2
+    sum = np.sum(np.rint(x))
+    if sum == 0:
+        z = np.zeros(x.shape, x.dtype)
+        z[np.argmax(x)] = 1
+        return z
+    return np.rint(x)
 
 class CNN_Text(nn.Module):
     
@@ -303,8 +304,8 @@ def runNetwork(train, num_epochs, net, dataset, batch=32, file_extension=""):
             prediction = net.forward(embeddings)
             loss = criterion(prediction, np.argmax(label, axis=1))
             prediction = prediction.detach().numpy()
-            #prediction = np.apply_along_axis(predict_one_hot, axis=1, arr=prediction)
-            prediction = np.rint(prediction)
+            prediction = np.apply_along_axis(predict_one_hot, axis=1, arr=prediction)
+            #prediction = np.rint(prediction)
 
             hist_loss.append(loss.item())
 
