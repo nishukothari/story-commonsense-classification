@@ -211,9 +211,16 @@ def build_model_cnn(num_classes):
     return cnn
 
 def predict_one_hot(x):
+    sum = np.sum(np.rint(x))
     z = np.zeros(x.shape, x.dtype)
-    z[np.argmax(x)] = 1
-    return z
+    if sum == 0:
+        z[np.argmax(x)] = 1
+        z = np.zeros(x.shape, x.dtype)
+        return z
+        z[np.argmax(x)] = 1
+        return z
+        
+    return np.rint(x)
 
 
 class CNN_Text(nn.Module):
