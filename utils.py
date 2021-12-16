@@ -195,7 +195,7 @@ def build_model_bert_raw(bert_layer, max_len=128):
   _, sequence_output = bert_layer([input_word_ids, input_mask, segment_ids])
 
   model = tf.keras.models.Model(inputs=[input_word_ids, input_mask, segment_ids], outputs=sequence_output)
-  model.compile(tf.keras.optimizers.Adam(lr=1e-3), loss=tf.keras.losses.BinaryCrossentropy(from_logits=True), metrics=['accuracy'])
+  model.compile(tf.keras.optimizers.Adam(lr=1e-5), loss='categorical crossentropy', metrics=['accuracy'])
   
   return model
 
@@ -283,7 +283,7 @@ def get_dataloader(dataset, batch):
 
 def runNetwork(train, num_epochs, net, dataset, batch=32, file_extension=""):
 
-    criterion = nn.BCEWithLogitsLoss()
+    criterion = nn.CrossEntropyLoss()
     if train:
         net.train()
     else:
@@ -295,13 +295,13 @@ def runNetwork(train, num_epochs, net, dataset, batch=32, file_extension=""):
     precision = None
     recall = None
     f1 = None
-    optimizer = torch.optim.Adam(net.parameters(), lr=0.001)
+    optimizer = torch.optim.Adam(net.parameters(), lr=0.00001)
     total_count = 0
     for i in range(num_epochs):
         loader = get_dataloader(dataset, batch)
         for embeddings, label in tqdm(loader):        
             prediction = net.forward(embeddings)
-            loss = criterion(prediction, label.float())
+            loss = criterion(prediction, np.argmax(label, axis=1))
             prediction = prediction.detach().numpy()
             #prediction = np.apply_along_axis(predict_one_hot, axis=1, arr=prediction)
             prediction = np.rint(prediction)
