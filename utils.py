@@ -85,12 +85,6 @@ def combine_sentence(df):
 
     return full_sentence
 
-def noneFilter(arr):
-    for x in arr:
-        if x == 'none':
-            return False
-    
-    return True
 
 def preprocess(file_motivation, file_emotion, bert_layer):
     file_motivation["maslow"] = file_motivation["maslow"].apply(string_to_list)
@@ -109,10 +103,6 @@ def preprocess(file_motivation, file_emotion, bert_layer):
         'full_sentence': 'first'
     }).reset_index()
 
-    file_emotion = file_emotion[file_emotion["plutchik"].apply(noneFilter)]
-    file_motivation = file_motivation[file_motivation["reiss"].apply(noneFilter)]
-    file_motivation = file_motivation[file_motivation["maslow"].apply(noneFilter)]
-
     vocab_file = bert_layer.resolved_object.vocab_file.asset_path.numpy()
     do_lower_case = bert_layer.resolved_object.do_lower_case.numpy()
     tokenizer = FullTokenizer(vocab_file, do_lower_case)
@@ -126,6 +116,7 @@ def preprocess(file_motivation, file_emotion, bert_layer):
         ["spiritual growth"]
     ])
     labels_m = mlb_m.transform(groups_motivation["maslow"])
+    bool_vec_m = labels_m[labels_m.any(axis=1)]
 
     mlb_r = MultiLabelBinarizer()
     mlb_r.fit([
@@ -150,6 +141,8 @@ def preprocess(file_motivation, file_emotion, bert_layer):
         ["order"]
     ])
     labels_r = mlb_r.transform(groups_motivation["reiss"])
+    bool_vec_r = labels_r[labels_r.any(axis=1)]
+    bool_vec_motivation = np.logical_and(bool_vec_m, bool_vec_r)
 
     mlb_p = MultiLabelBinarizer()
     mlb_p.fit([
@@ -171,6 +164,10 @@ def preprocess(file_motivation, file_emotion, bert_layer):
         ["joy:3"]
     ])
     labels_p =  mlb_p.transform(groups_emotion["plutchik"])
+    bool_vec_emotion = labels_p[labels_p.any(axis=1)]
+
+    groups_motivation = groups_motivation[bool_vec_motivation]
+    groups_emotion = groups_emotion[bool_vec_emotion]
 
     inputs_m = bert_encode(groups_motivation['full_sentence'].values, tokenizer)
     inputs_e = bert_encode(groups_emotion['full_sentence'].values, tokenizer)
@@ -180,9 +177,9 @@ def preprocess(file_motivation, file_emotion, bert_layer):
         'emotion': inputs_e
     }
     labels = {
-        'maslow': labels_m,
-        'reiss': labels_r,
-        'plutchik': labels_p
+        'maslow': labels_m[bool_vec_motivation],
+        'reiss': labels_r[bool_vec_motivation],
+        'plutchik': labels_p[bool_vec_emotion]
     }
 
     return inputs, labels
