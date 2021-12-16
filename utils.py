@@ -116,7 +116,7 @@ def preprocess(file_motivation, file_emotion, bert_layer):
         ["spiritual growth"]
     ])
     labels_m = mlb_m.transform(groups_motivation["maslow"])
-    bool_vec_m = labels_m[labels_m.any(axis=1)]
+    bool_vec_m = labels_m.any(axis=1)
 
     mlb_r = MultiLabelBinarizer()
     mlb_r.fit([
@@ -141,7 +141,7 @@ def preprocess(file_motivation, file_emotion, bert_layer):
         ["order"]
     ])
     labels_r = mlb_r.transform(groups_motivation["reiss"])
-    bool_vec_r = labels_r[labels_r.any(axis=1)]
+    bool_vec_r = labels_r.any(axis=1)
     bool_vec_motivation = np.logical_and(bool_vec_m, bool_vec_r)
 
     mlb_p = MultiLabelBinarizer()
@@ -164,7 +164,7 @@ def preprocess(file_motivation, file_emotion, bert_layer):
         ["joy:3"]
     ])
     labels_p =  mlb_p.transform(groups_emotion["plutchik"])
-    bool_vec_emotion = labels_p[labels_p.any(axis=1)]
+    bool_vec_emotion = labels_p.any(axis=1)
 
     groups_motivation = groups_motivation[bool_vec_motivation]
     groups_emotion = groups_emotion[bool_vec_emotion]
