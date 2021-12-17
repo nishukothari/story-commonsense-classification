@@ -131,8 +131,8 @@ dmypy.json
 .DS_Store
 .vscode
 
-scs-baselines-master/processed
-model.h5
-model1.h5
 
+
+models
 test_run*
+train_run*
